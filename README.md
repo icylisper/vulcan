@@ -1,22 +1,25 @@
-* Vulcan
+Vulcan
+======
 
-Tool to simplify workflow with Git-based Clojure dependencies using clojure.tools.deps
+Tool to simplify workflow with Git-based Clojure dependencies using
+clojure.tools.deps
 
-- upgrade to latest SHA corresponding to release tags
-- flatten dependencies
-- diff upstream versions of Git deps
-- link to local projects
-- generate the next semantic version tag
-- pack dependencies to run without uberjar
-- find dependencies that have conflicting namespaces
-- run test selectors with proper exit code
-- import new deps in the REPL
+-   upgrade to latest SHA corresponding to release tags
+-   flatten dependencies
+-   diff upstream versions of Git deps
+-   link to local projects
+-   generate the next semantic version tag
+-   pack dependencies to run without uberjar
+-   find dependencies that have conflicting namespaces
+-   run test selectors with proper exit code
+-   import new deps in the REPL
 
-* Install
+Install
+=======
 
-Add below alias to ~/.clojure/deps.edn
+Add below alias to \~/.clojure/deps.edn
 
-#+BEGIN_SRC clojure
+``` {.clojure}
 {:aliases
  {:vulcan
   {:extra-deps
@@ -33,11 +36,12 @@ Add below alias to ~/.clojure/deps.edn
     "-Xshare:off"
     "-Xverify:none"
     "-XX:TieredStopAtLevel=1"]}}}
-#+END_SRC
+```
 
-* Usage
+Usage
+=====
 
-#+begin_src sh
+``` {.bash}
 clj -Avulcan command args
 Available commands:
   upgrade    Upgrade deps to latest tags for given org or prefix
@@ -50,17 +54,17 @@ Available commands:
   test       Run test-runner with given selector
   link       link local git repos
   unlink     unlink local git repos
-#+end_src
+```
 
-** Upgrading Dependencies
+Upgrading Dependencies
+----------------------
 
-The assumption is that Git tags are SEMVERs and correspond to
-releases. `-Avulcan upgrade` upgrades dependencies to the latest
-release tags for the given organization or prefix.
-This is particularly useful in Continuous integrations and local
-development.
+The assumption is that Git tags are SEMVERs and correspond to releases.
+\`-Avulcan upgrade\` upgrades dependencies to the latest release tags
+for the given organization or prefix. This is particularly useful in
+Continuous integrations and local development.
 
-#+begin_src sh
+``` {.bash}
 clj -Avulcan upgrade -p <github-org>
 e.g clj -Avulcan upgrade -p omnyway-labs
 "wrote deps.edn"
@@ -69,24 +73,25 @@ e.g clj -Avulcan upgrade -p omnyway-labs
 
 # for a dry run
 clj -Avulcan upgrade -p <github-org> --dry-run
-#+end_src
+```
 
+Flattening dependencies
+-----------------------
 
-** Flattening dependencies
+To upgrade git dependencies to their latest tags and flatten out their
+dependencies, do
 
-To upgrade git dependencies to their latest tags and flatten
-out their dependencies, do
-#+begin_src sh
+``` {.bash}
 clj -Avulcan upgrade -p <github-org> --flatten
 # or short form
 clj -Avulcan upgrade -p <github-org> -f
-#+end_src
+```
 
-This is useful where top-level repos could contain a flattened deps
-map for overrides and identifying stale dependencies. Flatten command
-also prints the dependents (parents) of the dependencies. For example:
+This is useful where top-level repos could contain a flattened deps map
+for overrides and identifying stale dependencies. Flatten command also
+prints the dependents (parents) of the dependencies. For example:
 
-#+BEGIN_SRC clojure
+``` {.clojure}
 {:deps
  {instaparse/instaparse
   {:mvn/version "1.4.0",
@@ -94,81 +99,98 @@ also prints the dependents (parents) of the dependencies. For example:
    :dependents [clout/clout]},
   io.aviso/pretty
   {:mvn/version "0.1.30", :dependents [com.taoensso/timbre]}}}
-#+END_SRC
+```
 
-** Diffing upstream versions
+Diffing upstream versions
+-------------------------
 
 To find the latest and current versions (tags) for given org
-#+begin_src sh
+
+``` {.bash}
 clj -Avulcan diff -p <github-org>
 # output should be something like this
 {foo/bar
  {"0.1.6" "2018-03-05T03:46:54.000+0000",
   "0.1.7" "2018-03-07T01:50:08.000+0000"},
-#+end_src
-** Linking to local projects
+```
 
-Sometimes, it is useful to "link" local projects that have local
-changes - similar to *lein checkout*. To get the similar behavior do
+Linking to local projects
+-------------------------
 
-Link assumes that the project we're linking is one directory above the vulkan
-directory.
+Sometimes, it is useful to "link" local projects that have local changes
+- similar to **lein checkout**. To get the similar behavior do
 
-#+begin_src sh
+Link assumes that the project we're linking is one directory above the
+vulkan directory.
+
+``` {.bash}
 clj -Avulcan link --project <org/project>
 # or
 clj -Avulcan link -p <org/project>
-#+end_src
+```
 
-Unlinking is easier too. Make sure you unlink before comitting
-deps.edn to git
+Unlinking is easier too. Make sure you unlink before comitting deps.edn
+to git
 
-#+begin_src sh
+``` {.bash}
 clj -Avulcan unlink -p <org/project>
-#+end_src
+```
 
-** Packing Dependencies
+Packing Dependencies
+--------------------
 
 To pack all Maven and Git dependencies into a single directory, do
-#+begin_src  sh
-clj -Avulcan pack
-#+end_src
-The above command packs all deps to ./lib/{git,jar}. We could tar, containerize and
-deploy  Also *pack* generates a .classpath file that contains the
-resolved classpath string that can be used when invoking
-the service
-#+begin_src sh
-java -cp src:`cat .classpath` clojure.main -m my.main $@
-#+end_src
 
-** Finding Conflict
+``` {.bash}
+clj -Avulcan pack
+```
+
+The above command packs all deps to ./lib/{git,jar}. We could tar,
+containerize and deploy Also **pack** generates a .classpath file that
+contains the resolved classpath string that can be used when invoking
+the service
+
+``` {.bash}
+java -cp src:`cat .classpath` clojure.main -m my.main $@
+```
+
+Finding Conflict
+----------------
 
 To find overlapping or conflicting namespaces for given org (or prefix)
 
-#+begin_src sh
+``` {.bash}
 clj -Avulcan conflicts -p github-org
 
 The following projects duplicate the namespace foo.bar
 foo-dep foo.bar
 bar-dep foo.bar
-#+end_src
+```
 
-** Generate next-tag
+Generate next-tag
+-----------------
 
-#+BEGIN_SRC sh
+``` {.bash}
 clj -Avulcan  next-tag
 0.1.0
-#+END_SRC
-For this to work, need to create a RELEASE-0.1.0 tag initially
-** Test selectors
+```
 
-#+BEGIN_SRC sh
+For this to work, need to create a RELEASE-0.1.0 tag initially
+
+Test selectors
+--------------
+
+``` {.bash}
 clj -Avulcan test -s unit
 clj -Avulcan test -s integration
-#+END_SRC
+```
+
 This is useful to run tests with proper exit codes
-** Importing libraries in the REPL
-#+BEGIN_SRC clojure
+
+Importing libraries in the REPL
+-------------------------------
+
+``` {.clojure}
 (require '[vulcan.deps :as deps])
 ;; to import known libs in current deps.edn
 (deps/import! :my-git-lib :latest)
@@ -178,19 +200,18 @@ This is useful to run tests with proper exit codes
 (deps/import! '{org/project
                  {:git/url "git@github.com:org/project.git",
                   :tag "0.1.98"}})
-#+END_SRC
+```
 
-* License - Apache 2.0
-
-
+License - Apache 2.0
+====================
 
 Copyright 2019 Omnyway Inc.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+a copy of the License at
 
-[[http://www.apache.org/licenses/LICENSE-2.0]]
+<http://www.apache.org/licenses/LICENSE-2.0>
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -198,8 +219,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License
 
-* Note
+Note
+====
 
-Original source at https://github.com/omnyway-labs/vulcan
+Original source at <https://github.com/omnyway-labs/vulcan>
 
 This fork has optimizations to be compiled as a Graal binary
