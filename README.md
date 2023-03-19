@@ -23,7 +23,7 @@ Add below alias to \~/.clojure/deps.edn
 {:aliases
  {:vulcan
   {:extra-deps
-   {omnyway-labs/vulcan
+   {icylisper/vulcan
     {:git/url "https://git.sr.ht/~icylisper/vulcan",
      :sha "d7ed0f85893a2b5054720b0e191c606dfaf45c9c"}},
    :main-opts ["-m" "vulcan.main"],
@@ -65,7 +65,7 @@ Continuous integrations and local development.
 
 ``` {.bash}
 clj -Avulcan upgrade -p <github-org>
-e.g clj -Avulcan upgrade -p omnyway-labs
+e.g clj -Avulcan upgrade -p myorg
 "wrote deps.edn"
 
 # where prefix is the Organization prefix
